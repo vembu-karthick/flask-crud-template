@@ -76,8 +76,9 @@ def insert_template(current_user):
             'body': data['body'],
             'user_id': ObjectId(current_user['_id'])
         }
-        mongo.db.templates.insert_one(template_data)
-        return jsonify({'message': 'Template created successfully!'}), 201
+        result = mongo.db.templates.insert_one(template_data)
+        template_id = str(result.inserted_id)
+        return jsonify({'message': 'Template created successfully!', 'Template ID': template_id}), 201
     except Exception as e:
         return jsonify({'message': str(e)}), 500
 
@@ -144,6 +145,37 @@ def delete_template(current_user, template_id):
         return jsonify({'message': 'Template deleted successfully!'}), 200
     except Exception as e:
         return jsonify({'message': str(e)}), 500
+
+@app.route('/template/<template_id>', methods=['PATCH'])
+@token_required
+def patch_template(current_user, template_id):  # Renamed function
+    try:
+        data = request.get_json()
+        update_fields = {}
+
+        if 'template_name' in data:
+            update_fields['template_name'] = data['template_name']
+        if 'subject' in data:
+            update_fields['subject'] = data['subject']
+        if 'body' in data:
+            update_fields['body'] = data['body']
+
+        if not update_fields:
+            return jsonify({'message': 'No fields provided for update'}), 400
+
+        result = mongo.db.templates.update_one(
+            {'_id': ObjectId(template_id), 'user_id': ObjectId(current_user['_id'])},
+            {'$set': update_fields}
+        )
+
+        if result.matched_count == 0:
+            return jsonify({'message': 'Template not found or unauthorized'}), 404
+
+        return jsonify({'message': 'Template updated successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
 
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=5000)
