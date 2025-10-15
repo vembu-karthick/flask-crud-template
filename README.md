@@ -16,7 +16,7 @@
 
 The service is hosted and accessible via the following link:
 
-[Flask CRUD Hosted Service](https://flask-crud-jbel.onrender.com)
+[Flask CRUD Hosted Service](https://flask-crud-template.onrender.com)
 
 ## Endpoints
 
