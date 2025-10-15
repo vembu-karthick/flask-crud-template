@@ -3,19 +3,24 @@ from waitress import serve
 from flask_pymongo import PyMongo
 import bcrypt
 from jwt import (JWT, jwk_from_dict)
+import base64
 from jwt.utils import get_int_from_datetime
 from datetime import datetime, timedelta, timezone
+from dotenv import load_dotenv
 from bson.objectid import ObjectId
 import json
 from functools import wraps
 import os
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = "mongodb+srv://geerthikumar2100:sXjD2GhXx0SQJXj4@cluster0.d2krt.mongodb.net/?retryWrites=true&w=majority"
-secret_key = jwk_from_dict(json.load(open('rsa_privkey.json')))
+load_dotenv()
+app.config['MONGO_URI'] = os.getenv('MONGO_URI')
+rsa_key_b64 = os.getenv('RSA_PRIVKEY_B64')
+rsa_key_json = base64.b64decode(rsa_key_b64).decode('utf-8')
+secret_key = jwk_from_dict(json.loads(rsa_key_json))
 
 mongo = PyMongo(app)
-mongo.db = mongo.cx['templates']
+mongo.db = mongo.cx['sample_mflix']
 _jwt = JWT()
 
 def token_required(f):
